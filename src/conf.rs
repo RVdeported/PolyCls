@@ -4,7 +4,8 @@ use std::env;
 use std::path::PathBuf;
 
 #[derive(Deserialize)]
-pub enum Protocol {
+pub enum Protocol
+{
   #[serde(rename = "ollama")]
   Ollama,
   #[serde(rename = "openai")]
@@ -15,8 +16,10 @@ pub enum Protocol {
   Anthropic,
 }
 
-impl Protocol {
-  pub fn to_str(self: &Self) -> &str {
+impl Protocol
+{
+  pub fn to_str(self: &Self) -> &str
+  {
     match self {
       Protocol::Ollama => return "ollama",
       Protocol::OpenAI => return "openai",
@@ -26,14 +29,19 @@ impl Protocol {
   }
 }
 
-pub fn load_config(a_path: &String) -> Result<TendConfig, ConfigError> {
+pub fn load_config(a_path: &String)
+-> Result<TendConfig, ConfigError>
+{
   let config = Config::builder()
     .add_source(File::new(a_path.as_str(), FileFormat::Ini))
     .build()?;
   config.try_deserialize()
 }
 
-pub fn load_llm_config(a_path: &String) -> Result<Vec<LlmConfig>, ConfigError> {
+pub fn load_llm_config(
+  a_path: &String,
+) -> Result<Vec<LlmConfig>, ConfigError>
+{
   let config = Config::builder()
     .add_source(File::with_name(a_path.as_str()))
     .build()?;
@@ -60,35 +68,27 @@ pub fn load_llm_config(a_path: &String) -> Result<Vec<LlmConfig>, ConfigError> {
 //===========================================================================//
 
 #[derive(Deserialize)]
-pub struct TendConfig {
+pub struct TendConfig
+{
   pub main: MainConfig,
-  pub tender_plan: Option<TenderPlanConfig>,
   pub postgres: PostgresConfig,
 }
 
 #[derive(Deserialize)]
-pub struct MainConfig {
+pub struct MainConfig
+{
   pub start_date: String,
   pub files_path: PathBuf,
   pub out_files_path: PathBuf,
-  pub example_org_path: PathBuf,
-  pub example_tex_path: PathBuf,
-}
-
-//===========================================================================//
-// TenderPlan api config                                                     //
-//===========================================================================//
-#[derive(Deserialize)]
-pub struct TenderPlanConfig {
-  pub api_key: String,
-  pub query: String,
+  pub top_n: usize,
 }
 
 //===========================================================================//
 // postgres config                                                           //
 //===========================================================================//
 #[derive(Deserialize)]
-pub struct PostgresConfig {
+pub struct PostgresConfig
+{
   pub host: String,
   pub user: String,
   pub psswd: String,
@@ -98,15 +98,18 @@ pub struct PostgresConfig {
 // llm config                                                                //
 //===========================================================================//
 #[derive(Deserialize)]
-pub struct LlmConfig {
+pub struct LlmConfig
+{
   pub host: String,
   pub protocol: Protocol,
   pub api_key: String,
   pub model_name: String,
 }
 
-impl LlmConfig {
-  pub fn set_env(self: &Self) {
+impl LlmConfig
+{
+  pub fn set_env(self: &Self)
+  {
     match self.protocol {
       Protocol::Ollama => unsafe {
         env::set_var("OLLAMA_API_BASE_URL", self.host.clone());

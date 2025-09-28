@@ -5,6 +5,44 @@ use std::io::BufReader;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TypeT
+{
+  Xps,
+  Eps,
+  Pson,
+  Psv,
+  Pir,
+  GlassWool,
+  StoneWool,
+  Other,
+  NoEval,
+}
+
+impl TypeT
+{
+  pub fn from_str(a_str: &String) -> Self
+  {
+    if a_str.to_lowercase() == "xps" {
+      return TypeT::Xps;
+    } else if a_str.to_lowercase() == "eps" {
+      return TypeT::Eps;
+    } else if a_str.to_lowercase() == "pson" {
+      return TypeT::Pson;
+    } else if a_str.to_lowercase() == "psv" {
+      return TypeT::Psv;
+    } else if a_str.to_lowercase() == "glasswool" {
+      return TypeT::GlassWool;
+    } else if a_str.to_lowercase() == "stonewool" {
+      return TypeT::StoneWool;
+    } else if a_str.to_lowercase() == "other" {
+      return TypeT::Other;
+    } else {
+      return TypeT::NoEval;
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SegmentT
 {
   Kz,
@@ -1108,6 +1146,32 @@ impl From<RusSchema> for GeneralSchema
 
 impl GeneralSchema
 {
+  /// Validates and converts the raw eval field to the appropriate TypeT enum value
+  pub fn validate_and_convert_eval(
+    raw_eval: Option<String>,
+  ) -> Option<String>
+  {
+    match raw_eval {
+      Some(eval_str) => {
+        // Check if the eval string matches any of the TypeT enum variants (case-insensitive)
+        let eval_lower = eval_str.to_lowercase();
+        match eval_lower.as_str() {
+          "xps" => Some("Xps".to_string()),
+          "eps" => Some("Eps".to_string()),
+          "pson" => Some("Pson".to_string()),
+          "psv" => Some("Psv".to_string()),
+          "pir" => Some("Pir".to_string()),
+          "glasswool" | "glass wool" => Some("GlassWool".to_string()),
+          "stonewool" | "stone wool" => Some("StoneWool".to_string()),
+          "other" => Some("Other".to_string()),
+          "noeval" => Some("NoEval".to_string()),
+          _ => Some("NoEval".to_string()), // Default to NoEval if no match
+        }
+      }
+      None => Some("NoEval".to_string()), // Default to NoEval if eval is None
+    }
+  }
+
   pub fn from_csv_file_path(
     path: &PathBuf,
     seg: SegmentT,
@@ -1122,19 +1186,28 @@ impl GeneralSchema
       SegmentT::Kz => {
         for record in reader.deserialize() {
           let row: KzSchema = record?;
-          result.push(GeneralSchema::from(row));
+          let mut schema: GeneralSchema = GeneralSchema::from(row);
+          schema.eval =
+            GeneralSchema::validate_and_convert_eval(schema.eval);
+          result.push(schema);
         }
       }
       SegmentT::Rus => {
         for record in reader.deserialize() {
           let row: RusSchema = record?;
-          result.push(GeneralSchema::from(row));
+          let mut schema: GeneralSchema = GeneralSchema::from(row);
+          schema.eval =
+            GeneralSchema::validate_and_convert_eval(schema.eval);
+          result.push(schema);
         }
       }
       SegmentT::Eas => {
         for record in reader.deserialize() {
           let row: EasSchema = record?;
-          result.push(GeneralSchema::from(row));
+          let mut schema: GeneralSchema = GeneralSchema::from(row);
+          schema.eval =
+            GeneralSchema::validate_and_convert_eval(schema.eval);
+          result.push(schema);
         }
       }
     }
