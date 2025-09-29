@@ -69,12 +69,14 @@ pub async fn cls(
     category. Use those for reference. \
     Answer ONLY with the selected category with no other descriptions or symbols.
     ")
-    .max_tokens(100)
+    .max_tokens(4000)
     .build()
     .prompt(a_itm)
     .await?;
 
-  let c = remove_block(&res, "think".to_string());
+  let d = remove_block(&res, "think".to_string());
+  let c = d.strip_prefix("\n\n").unwrap_or(d.as_str()).to_string();
+  tracing::debug!("Got output from model: {}", c);
   let out = TypeT::from_str(&c);
 
   Ok(out)

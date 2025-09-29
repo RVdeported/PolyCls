@@ -68,7 +68,7 @@ pub async fn get_rows_for_eval(
 {
   let res = a_cli
     .query(
-      "SELECT id, product_description_1, product_description_2 \
+      "SELECT id, sender_name, product_description_1, product_description_2 \
     FROM general_schema WHERE eval='NoEval'",
       &[],
     )
@@ -78,9 +78,15 @@ pub async fn get_rows_for_eval(
 
   for s in res {
     let id: i32 = s.get("id");
-    let s1: String = s.get(1);
-    let s2: Option<String> = s.get(2);
-    let s3 = format!("{} {}", s1, s2.unwrap_or("".to_string()));
+    let sender: String = s.get(1);
+    let s1: String = s.get(2);
+    let s2: Option<String> = s.get(3);
+    let s3 = format!(
+      "Sender: {} Product: {} {}",
+      sender,
+      s1,
+      s2.unwrap_or("".to_string())
+    );
 
     out.push(ToEval::new(id.to_string(), s3));
   }
@@ -94,8 +100,10 @@ pub async fn init_general_schema_table(
 ) -> Result<(), Error>
 {
   client
-    .execute(
-      "CREATE TABLE IF NOT EXISTS general_schema (
+    .batch_execute(
+      "
+      DROP TABLE IF EXISTS general_schema;
+      CREATE TABLE IF NOT EXISTS general_schema (
                 id SERIAL PRIMARY KEY,
                 seg TEXT NOT NULL,
                 declaration_number TEXT,
@@ -204,9 +212,9 @@ pub async fn init_general_schema_table(
                 incoterm TEXT,
                 category TEXT,
                 eval TEXT,
+                eval_sec TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )",
-      &[],
+            );",
     )
     .await?;
 
@@ -299,25 +307,11 @@ pub async fn insert_general_schema(
 ) -> Result<u64, Error>
 {
   // Validate and convert the eval field before insertion
-  let validated_eval = match &schema.eval {
-    Some(eval_str) => {
-      // Check if the eval string matches any of the TypeT enum variants (case-insensitive)
-      let eval_lower = eval_str.to_lowercase();
-      match eval_lower.as_str() {
-        "xps" => Some("Xps".to_string()),
-        "eps" => Some("Eps".to_string()),
-        "pson" => Some("Pson".to_string()),
-        "psv" => Some("Psv".to_string()),
-        "pir" => Some("Pir".to_string()),
-        "glasswool" | "glass wool" => Some("GlassWool".to_string()),
-        "stonewool" | "stone wool" => Some("StoneWool".to_string()),
-        "other" => Some("Other".to_string()),
-        "noeval" => Some("NoEval".to_string()),
-        _ => Some("NoEval".to_string()), // Default to NoEval if no match
-      }
-    }
-    None => Some("NoEval".to_string()), // Default to NoEval if eval is None
-  };
+  let validated_eval =
+    TypeT::from_str(&schema.eval.clone().unwrap_or("".to_string()));
+  let validated_eval_sec = TypeT::from_str(
+    &schema.eval_sec.clone().unwrap_or("".to_string()),
+  );
 
   let effective_date = match &schema.effective_date {
     Some(date_str) if !date_str.is_empty() => parse_date(date_str),
@@ -371,7 +365,7 @@ pub async fn insert_general_schema(
                 decision_code_ts, recall_decision_code, customs_value_ts, 
                 previous_customs_value, total_customs_payments, customs_region, 
                 customs_procedure, additional_bdecl1, customs_op, incoterm, 
-                category, eval
+                category, eval, eval_sec
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
                 $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, 
@@ -381,7 +375,7 @@ pub async fn insert_general_schema(
                 $68, $69, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $80, 
                 $81, $82, $83, $84, $85, $86, $87, $88, $89, $90, $91, $92, $93, 
                 $94, $95, $96, $97, $98, $99, $100, $101, $102, $103, $104, $105, 
-                $106, $107
+                $106, $107, $108
             ) RETURNING id",
             &[
                 &seg_str,
@@ -490,7 +484,8 @@ pub async fn insert_general_schema(
                 &schema.customs_op,
                 &schema.incoterm,
                 &schema.category,
-                &validated_eval,
+                &format!("{:?}", validated_eval),
+                &format!("{:?}", validated_eval_sec),
             ],
         )
         .await?;

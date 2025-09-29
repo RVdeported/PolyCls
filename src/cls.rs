@@ -33,23 +33,45 @@ pub async fn eval(
     let prompt =
       format!("DESCRIPTION: {}\nSAMPLES:\n{}", &itm.descr, smpls);
 
-    tasks.push(cls(prompt, a_conf_model));
+    tasks.push(prompt);
   }
 
-  let results = join_all(tasks).await;
-  for (eval, res_) in to_eval.iter_mut().zip(results) {
-    let res = res_.expect("Could not pass the prompt to the LLM");
-    match res {
-      TypeT::NoEval => {
-        tracing::warn!("Could not evaluate item {}", &eval.id);
-      }
-      _ => {}
+  let mut results = Vec::new();
+  for ch in tasks.chunks(50) {
+    let mut tts = Vec::new();
+    for s in ch {
+      tts.push(cls(s.clone(), a_conf_model));
     }
 
-    eval.eval = res;
-    update_eval_status(a_cli, &eval)
-      .await
-      .expect("Could not update the entries");
+    for t in join_all(tts).await {
+      results.push(t);
+    }
+  }
+
+  for (eval, res_) in to_eval.iter_mut().zip(results) {
+    let out = res_;
+
+    match out {
+      Ok(res) => {
+        match res {
+          TypeT::NoEval => {
+            tracing::warn!("Could not evaluate item {}", &eval.id);
+          }
+          _ => {}
+        }
+        eval.eval = res;
+        update_eval_status(a_cli, &eval)
+          .await
+          .expect("Could not update the entries");
+      }
+      Err(e) => {
+        tracing::error!(
+          " Could not eval id: {} err: {:?}",
+          eval.id,
+          e
+        );
+      }
+    }
   }
 
   return to_eval;

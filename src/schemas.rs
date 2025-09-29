@@ -4,7 +4,9 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(
+  Debug, Clone, Serialize, Deserialize, enum_iterator::Sequence,
+)]
 pub enum TypeT
 {
   Xps,
@@ -28,6 +30,8 @@ impl TypeT
       return TypeT::Eps;
     } else if a_str.to_lowercase() == "pson" {
       return TypeT::Pson;
+    } else if a_str.to_lowercase() == "pir" {
+      return TypeT::Pir;
     } else if a_str.to_lowercase() == "psv" {
       return TypeT::Psv;
     } else if a_str.to_lowercase() == "glasswool" {
@@ -161,6 +165,7 @@ pub struct GeneralSchema
   pub incoterm: Option<String>,
   pub category: Option<String>,
   pub eval: Option<String>,
+  pub eval_sec: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -240,6 +245,9 @@ pub struct EasSchema
 
   #[serde(rename = "ТИП 2")]
   pub eval: Option<String>,
+
+  #[serde(rename = "ТИП 3")]
+  pub eval_sec: Option<String>,
 
   #[serde(rename = "16 Вес нетто кг")]
   pub net_weight: Option<String>,
@@ -394,6 +402,9 @@ pub struct KzSchema
 
   #[serde(rename = "ТИП 2")]
   pub eval: Option<String>,
+
+  #[serde(rename = "ТИП 3")]
+  pub eval_sec: Option<String>,
 
   #[serde(rename = "G31_11 Производитель")]
   pub manufacturer: Option<String>,
@@ -681,6 +692,9 @@ pub struct RusSchema
   #[serde(rename = "ТИП 2")]
   pub eval: Option<String>,
 
+  #[serde(rename = "ТИП 3")]
+  pub eval_sec: Option<String>,
+
   #[serde(rename = "Производитель")]
   pub manufacturer: Option<String>,
 
@@ -906,6 +920,7 @@ impl From<EasSchema> for GeneralSchema
       incoterm: None,
       category: eas.category,
       eval: eas.eval,
+      eval_sec: eas.eval_sec,
     }
   }
 }
@@ -1023,6 +1038,7 @@ impl From<KzSchema> for GeneralSchema
       incoterm: None,
       category: kz.category,
       eval: kz.eval,
+      eval_sec: kz.eval_sec,
     }
   }
 }
@@ -1140,6 +1156,7 @@ impl From<RusSchema> for GeneralSchema
       incoterm: None,
       category: None,
       eval: rus.eval,
+      eval_sec: rus.eval_sec,
     }
   }
 }

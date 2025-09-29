@@ -38,3 +38,5 @@ rig-core = {git = "https://github.com/RVdeported/rig.git"}
 # rig-postgres = "0.1.20"
 postgres-types = "0.2.10"
 futures = "0.3.31"
+enum-iterator = "2.3.0"
+futures-batch = "0.7.0"
