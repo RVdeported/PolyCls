@@ -55,7 +55,8 @@ async fn main()
     }
 
     let res =
-      read_file(&p, seg_t.expect(""), &client, &llm_config[1]).await;
+      read_file(&p, seg_t.expect(""), false, &client, &llm_config[1])
+        .await;
 
     if res.is_ok() {
       tracing::info!("Ok read {} {}", path, seg);

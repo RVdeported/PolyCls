@@ -14,6 +14,7 @@ use tokio_postgres::Client;
 pub async fn read_file(
   a_path: &PathBuf,
   a_seg: SegmentT,
+  a_force_import: bool,
   a_cli: &Client,
   a_conf_embed: &LlmConfig,
 ) -> Result<usize, Box<dyn Error>>
@@ -23,7 +24,7 @@ pub async fn read_file(
 
   let date: NaiveDate;
 
-  if date_res.len() == 0 {
+  if date_res.len() == 0 || a_force_import {
     date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
   } else {
     date = date_res[0].get(0);

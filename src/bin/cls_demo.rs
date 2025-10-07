@@ -39,7 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
 
   let mut done: usize = 0;
   for (path, seg) in ps {
-    done += read_file(&path, seg, &client, &llm_config[1]).await?;
+    done +=
+      read_file(&path, seg, false, &client, &llm_config[1]).await?;
   }
   tracing::info!("Red total of {} rows", done);
 
