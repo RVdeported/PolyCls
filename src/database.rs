@@ -97,12 +97,18 @@ pub async fn get_rows_for_eval(
 /// Initialize the GeneralSchema table in PostgreSQL
 pub async fn init_general_schema_table(
   client: &Client,
+  purge: bool,
 ) -> Result<(), Error>
 {
+  if purge {
+    client
+      .batch_execute("DROP TABLE IF EXISTS general_schema;")
+      .await?;
+  }
+
   client
     .batch_execute(
       "
-      DROP TABLE IF EXISTS general_schema;
       CREATE TABLE IF NOT EXISTS general_schema (
                 id SERIAL PRIMARY KEY,
                 seg TEXT NOT NULL,
@@ -223,11 +229,16 @@ pub async fn init_general_schema_table(
 
 pub async fn init_vector_storage_data(
   a_cli: &Client,
+  purge: bool,
 ) -> Result<(), Error>
 {
+  if purge {
+    a_cli
+      .batch_execute("DROP TABLE IF EXISTS poly_docs;")
+      .await?;
+  }
   a_cli.batch_execute("\
-    CREATE EXTENSION IF NOT EXISTS vector;\
-    DROP TABLE IF EXISTS poly_docs;
+    CREATE EXTENSION IF NOT EXISTS vector; \
     CREATE TABLE IF NOT EXISTS poly_docs (\
       id uuid DEFAULT gen_random_uuid(), -- we can have repeated entries
       document TEXT NOT NULL,

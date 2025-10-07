@@ -20,14 +20,15 @@ pub async fn eval(
 
   let mut tasks = Vec::new();
   for itm in to_eval.iter() {
-    let sim = find_vec_store(
-      a_cli,
-      &itm.descr,
-      a_conf_emb,
-      a_conf_main.top_n,
-    )
-    .await
-    .expect("Could not make vector search");
+    let mut descr = itm.descr.clone();
+    if descr.len() > 512 {
+      let max = descr.floor_char_boundary(510);
+      descr.truncate(max);
+    }
+    let sim =
+      find_vec_store(a_cli, &descr, a_conf_emb, a_conf_main.top_n)
+        .await
+        .expect("Could not make vector search");
 
     let smpls = sim.join("\n");
     let prompt =

@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
     .await?;
 
   // Initialize the GeneralSchema table
-  init_general_schema_table(&client).await?;
+  init_general_schema_table(&client, true).await?;
 
   // Read sample data from CSV file
   let ps = [

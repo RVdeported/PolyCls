@@ -61,7 +61,12 @@ pub async fn read_file(
     }
 
     for r in futures::future::join_all(tasks).await {
-      r?;
+      if !r.is_ok() {
+        tracing::warn!(
+          "Error on reading item: {:?}",
+          r.err().unwrap()
+        );
+      }
     }
   }
 

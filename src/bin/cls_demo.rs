@@ -26,13 +26,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
   )
   .await?;
 
-  client
-    .execute("DROP TABLE IF EXISTS general_schema;", &[])
-    .await?;
-
   // Initialize the GeneralSchema table
-  init_general_schema_table(&client).await?;
-  init_vector_storage_data(&client).await?;
+  init_general_schema_table(&client, true).await?;
+  init_vector_storage_data(&client, true).await?;
 
   // Read sample data from CSV file
   let ps = [

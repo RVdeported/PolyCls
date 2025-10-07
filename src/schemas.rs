@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use strum_macros::EnumString;
 
 #[derive(
   Debug, Clone, Serialize, Deserialize, enum_iterator::Sequence,
@@ -46,7 +47,7 @@ impl TypeT
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, EnumString)]
 pub enum SegmentT
 {
   Kz,

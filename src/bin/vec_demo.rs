@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
 
   let file_path = PathBuf::from("samples/eas_customs_2.csv");
 
-  init_vector_storage_data(&client).await?;
+  init_vector_storage_data(&client, false).await?;
 
   let rows =
     GeneralSchema::from_csv_file_path(&file_path, SegmentT::Eas)?;
