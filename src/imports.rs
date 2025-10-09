@@ -52,7 +52,10 @@ pub async fn read_file(
   //------------------------------------//
   let only_known: Vec<GeneralSchema> = filtered
     .into_iter()
-    .filter(|x| x.eval.clone().unwrap() != "NoEval")
+    .filter(|x| {
+      x.eval.clone().unwrap() != "NoEval"
+        && x.eval.clone().unwrap() != "NoNeed"
+    })
     .collect();
 
   for vecs in only_known.chunks(500) {

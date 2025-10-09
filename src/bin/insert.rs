@@ -55,7 +55,7 @@ async fn main()
     }
 
     let res =
-      read_file(&p, seg_t.expect(""), false, &client, &llm_config[1])
+      read_file(&p, seg_t.expect(""), true, &client, &llm_config[1])
         .await;
 
     if res.is_ok() {
@@ -70,9 +70,9 @@ async fn main()
     }
   }
 
-  let res =
-    cls::eval(&client, &llm_config[1], &llm_config[0], &config.main)
-      .await;
-
-  println!("Totally evaled {} entries", res.len());
+  // let res =
+  //   cls::eval(&client, &llm_config[1], &llm_config[0], &config.main)
+  //     .await;
+  //
+  // println!("Totally evaled {} entries", res.len());
 }

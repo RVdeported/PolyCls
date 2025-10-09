@@ -286,6 +286,9 @@ pub async fn insert_vec_store(
   a_llm_conf: &LlmConfig,
 ) -> Result<(), Box<dyn std::error::Error>>
 {
+  if a_schema.product_description_1.clone().is_none() {
+    return Ok(());
+  }
   let item = VecItem {
     description: format!(
       "{} {}",

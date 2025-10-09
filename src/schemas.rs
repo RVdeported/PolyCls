@@ -19,6 +19,7 @@ pub enum TypeT
   StoneWool,
   Other,
   NoEval,
+  NoNeed,
 }
 
 impl TypeT
@@ -41,6 +42,8 @@ impl TypeT
       return TypeT::StoneWool;
     } else if a_str.to_lowercase() == "other" {
       return TypeT::Other;
+    } else if a_str.to_lowercase() == "noneed" {
+      return TypeT::NoNeed;
     } else {
       return TypeT::NoEval;
     }
